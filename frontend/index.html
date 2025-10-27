@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Transcript Pro - Learn Languages with AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TranscriptPro">
+</head>
+<body>
+    <!-- Main App Container -->
+    <div id="app">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="header-content">
+                <!-- Logo और Branding -->
+                <div class="logo">
+                    <h1>🎯 TranscriptPro</h1>
+                    <span class="tagline">Learn with YouTube & AI</span>
+                </div>
+                
+                <!-- Header Controls -->
+                <div class="header-controls">
+                    <!-- Authentication Section (Login/Signup) -->
+                    <div id="authSection" class="auth-section" style="display: none;">
+                        <button id="loginBtn" class="btn btn-outline">Login</button>
+                        <button id="registerBtn" class="btn btn-primary">Sign Up</button>
+                    </div>
+                    
+                    <!-- User Section (Logged In) -->
+                    <div id="userSection" class="user-section" style="display: none;">
+                        <div class="user-info">
+                            <img id="userAvatar" src="" alt="User Avatar" class="avatar">
+                            <span id="username" class="username"></span>
+                        </div>
+                        <button id="logoutBtn" class="btn btn-outline">Logout</button>
+                    </div>
+                    
+                    <!-- Settings Button -->
+                    <button id="settingsBtn" class="btn btn-icon" title="Settings">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Video Input Section - YouTube URL enter करने के लिए -->
+            <section class="video-input-section">
+                <div class="container">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="videoUrl" 
+                            placeholder="Paste YouTube URL here..." 
+                            class="video-input"
+                        >
+                        <button id="loadVideoBtn" class="btn btn-primary btn-large">
+                            Load Transcript
+                        </button>
+                    </div>
+                    
+                    <!-- Video Information Display -->
+                    <div class="video-info" id="videoInfo" style="display: none;">
+                        <img id="videoThumbnail" src="" alt="Video Thumbnail" class="thumbnail">
+                        <div class="video-details">
+                            <h3 id="videoTitle"></h3>
+                            <p id="videoChannel"></p>
+                            <p id="videoDuration"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dual Window Container - Sentences और Phrases display के लिए -->
+            <div id="dualWindowContainer" class="dual-window-container" style="display: none;">
+                <!-- Sentence Window (Left Side) -->
+                <div id="sentenceWindow" class="transcript-window sentence-window">
+                    <div class="window-header">
+                        <div class="header-left">
+                            <div class="status-dot"></div>
+                            <span>Sentence Transcript</span>
+                        </div>
+                        <div class="header-right">
+                            <button class="header-btn ai-fix-btn" title="Fix with AI">🤖 Fix</button>
+                            <button class="header-btn minimize-btn">−</button>
+                            <button class="header-btn close-btn">×</button>
+                        </div>
+                    </div>
+                    
+                    <div class="window-content">
+                        <!-- Current Sentence Display -->
+                        <div class="current-section">
+                            <div class="section-label">
+                                <span>🎯 CURRENTLY PLAYING</span>
+                            </div>
+                            <div id="currentSentenceOriginal" class="original-text">
+                                Video will start soon...
+                            </div>
+                            <div id="currentSentenceTranslated" class="translated-text">
+                                वीडियो जल्द ही शुरू होगा...
+                            </div>
+                            <div class="progress-section">
+                                <div class="time-display">
+                                    <span id="sentenceTime">0:00</span>
+                                    <span id="sentenceProgress">Sentence 1/10</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div id="sentenceProgressFill" class="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- All Sentences List -->
+                        <div class="sentences-list" id="sentencesListContainer">
+                            <!-- Sentences dynamically populate होंगे -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phrase Window (Right Side) -->
+                <div id="phraseWindow" class="transcript-window phrase-window">
+                    <div class="window-header">
+                        <div class="header-left">
+                            <div class="status-dot"></div>
+                            <span>Phrase Breakdown</span>
+                        </div>
+                        <div class="header-right">
+                            <button class="header-btn" id="refreshPhrases">🔄</button>
+                            <button class="header-btn minimize-btn">−</button>
+                            <button class="header-btn close-btn">×</button>
+                        </div>
+                    </div>
+                    
+                    <div class="window-content">
+                        <!-- Current Phrase Display -->
+                        <div class="current-section">
+                            <div class="section-label">
+                                <span>📖 CURRENT PHRASE</span>
+                            </div>
+                            <div id="currentPhraseOriginal" class="original-text">
+                                Select a sentence to see phrases
+                            </div>
+                            <div id="currentPhraseTranslated" class="translated-text">
+                                वाक्य चुनें वाक्यांश देखने के लिए
+                            </div>
+                            <div class="phrase-details">
+                                <span class="phrase-type" id="phraseType">Common Phrase</span>
+                                <span class="phrase-difficulty" id="phraseDifficulty">Easy</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Phrase Breakdown Section -->
+                        <div class="breakdown-section">
+                            <div class="section-label">
+                                <span>🔍 PHRASE BREAKDOWN</span>
+                            </div>
+                            <div id="phraseBreakdown" class="breakdown-content">
+                                <!-- Phrases dynamically populate होंगे -->
+                            </div>
+                        </div>
+                        
+                        <!-- Related Phrases Section -->
+                        <div class="related-section">
+                            <div class="section-label">
+                                <span>📚 RELATED PHRASES</span>
+                            </div>
+                            <div id="relatedPhrases" class="related-content">
+                                <!-- Related phrases dynamically populate होंगे -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selection Toolbar - Text select करने पर show होगा -->
+            <div id="selectionToolbar" class="selection-toolbar" style="display: none;">
+                <div class="toolbar-content">
+                    <span id="selectedText" class="selected-text"></span>
+                    <div class="toolbar-buttons">
+                        <button id="saveWordBtn" class="btn btn-success">💾 Save Word</button>
+                        <button id="savePhraseBtn" class="btn btn-info">💾 Save Phrase</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- YouTube Player Container (Fixed Position) -->
+        <div id="youtubePlayerContainer" class="youtube-player-container" style="display: none;">
+            <div class="player-header">
+                <span>YouTube Player</span>
+                <button id="closePlayerBtn" class="btn btn-icon">×</button>
+            </div>
+            <div id="youtube-player"></div>
+        </div>
+
+        <!-- Loading Overlay - Processing के दौरान show होगा -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p id="loadingText">Processing transcript...</p>
+            </div>
+        </div>
+
+        <!-- Authentication Modal -->
+        <div id="authModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="authModalTitle">Login</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="authForm">
+                        <div id="registerFields" style="display: none;">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="usernameInput" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="emailInput" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="passwordInput" required>
+                        </div>
+
+                        <div id="confirmPasswordGroup" class="form-group" style="display: none;">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPasswordInput" required>
+                        </div>
+
+                        <button type="submit" id="authSubmitBtn" class="btn btn-primary btn-full">
+                            Login
+                        </button>
+                    </form>
+                    
+                    <div class="auth-switch">
+                        <span id="authSwitchText">Don't have an account?</span>
+                        <button id="authSwitchBtn" class="btn btn-link">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Fix Modal -->
+        <div id="aiFixModal" class="modal">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h3>🤖 AI Transcript Fix</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="ai-options">
+                        <label>
+                            <input type="radio" name="fixType" value="sentence" checked> 
+                            Fix Sentence Separation
+                        </label>
+                        <label>
+                            <input type="radio" name="fixType" value="phrase"> 
+                            Fix Phrase Detection
+                        </label>
+                        <label>
+                            <input type="radio" name="fixType" value="both"> 
+                            Fix Both
+                        </label>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <div class="before-after">
+                            <div class="before">
+                                <h4>Before</h4>
+                                <div id="beforeFix" class="fix-preview"></div>
+                            </div>
+                            <div class="after">
+                                <h4>After AI Fix</h4>
+                                <div id="afterFix" class="fix-preview"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-controls">
+                        <button id="previewFix" class="btn btn-secondary">Preview Fix</button>
+                        <button id="applyFix" class="btn btn-primary">Apply AI Fix</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vocabulary Modal -->
+        <div id="vocabularyModal" class="modal">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h3>📚 My Vocabulary Bank</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="vocabulary-stats">
+                        <div class="stat-card">
+                            <span class="stat-number" id="totalWords">0</span>
+                            <span class="stat-label">Words</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="totalPhrases">0</span>
+                            <span class="stat-label">Phrases</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="masteredCount">0</span>
+                            <span class="stat-label">Mastered</span>
+                        </div>
+                    </div>
+
+                    <div class="vocabulary-controls">
+                        <input type="text" id="searchVocabulary" placeholder="Search words/phrases..." class="search-input">
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="word">Words</button>
+                            <button class="filter-btn" data-filter="phrase">Phrases</button>
+                            <button class="filter-btn" data-filter="due">Due for Review</button>
+                        </div>
+                    </div>
+
+                    <div id="vocabularyList" class="vocabulary-list">
+                        <!-- Vocabulary items dynamically populate होंगे -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⚙️ Settings</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-group">
+                        <h4>Language Preferences</h4>
+                        <div class="form-group">
+                            <label for="targetLanguage">Target Language</label>
+                            <select id="targetLanguage">
+                                <option value="hi">Hindi</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Player Settings</h4>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoScroll" checked> 
+                                Auto-scroll with video
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoSave" checked> 
+                                Auto-save vocabulary
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Appearance</h4>
+                        <div class="form-group">
+                            <label for="theme">Theme</label>
+                            <select id="theme">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="notification-container"></div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="scripts/youtube-player.js"></script> <!-- YouTube Player Integration -->
+    <script src="script.js"></script> <!-- Main Application Logic -->
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Service Worker Register करें PWA features के लिए
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('❌ Service Worker registration failed:', error);
+                });
+        }
+    </script>
+</body>
+      </html>
